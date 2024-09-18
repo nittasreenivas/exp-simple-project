@@ -3,7 +3,7 @@ const app = express();
 var bodyParser = require("body-parser");
 const cors = require("cors");
 var cookieParser = require("cookie-parser");
-
+var session = require("express-session");
 const users = [
   {
     username: "warner",
@@ -19,16 +19,24 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 app.options("*", cors());
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 60000 },
+  })
+);
 
 function checkLogin(req, res, next) {
-  if (req.cookies.username && req.cookies.password) {
+  if (req.session.username && req.session.password) {
     next();
   } else {
     res.sendFile(__dirname + "/login.html");
   }
 }
 app.get("/", (req, res) => {
-  if (req.cookies.username) {
+  if (req.session.username) {
     res.sendFile(__dirname + "/home.html");
   } else {
     res.sendFile(__dirname + "/login.html");
@@ -40,17 +48,17 @@ app.get("/aboutus", (req, res) => {
 });
 
 app.get("/careers", checkLogin, (req, res) => {
-  console.log("careers", req.cookies);
+  console.log("careers", req.session);
   res.sendFile(__dirname + "/careers.html");
 });
 
 app.get("/products", checkLogin, (req, res) => {
-  console.log("products", req.cookies);
+  console.log("products", req.session);
   res.sendFile(__dirname + "/products.html");
 });
 
 app.get("/pokimons", checkLogin, (req, res) => {
-  console.log("pokimons", req.cookies);
+  console.log("pokimons", req.session);
   res.sendFile(__dirname + "/pokimon.html");
 });
 app.get("/blue-car.jpg", (req, res) => {
@@ -72,8 +80,8 @@ app.get("/login", (req, res) => {
     }
   });
   if (x) {
-    res.cookie("username", req.query.username);
-    res.cookie("password", req.query.password);
+    req.session.username = req.query.username;
+    req.session.password = req.query.password;
     res.sendFile(__dirname + "/home.html");
   } else {
     res.sendFile(__dirname + "/error.html");
@@ -81,10 +89,11 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.clearCookie("password");
-  console.log("logout", req.cookies);
-  res.sendFile(__dirname + "/login.html")
+  //   res.clearCookie("username");
+  //   res.clearCookie("password");
+  req.session.destroy();
+  console.log("logout", req.session);
+  res.sendFile(__dirname + "/login.html");
 });
 app.get("/add", (req, res) => {
   console.log(req.query);
