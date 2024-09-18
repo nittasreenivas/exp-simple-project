@@ -4,6 +4,9 @@ var bodyParser = require("body-parser");
 const cors = require("cors");
 var cookieParser = require("cookie-parser");
 var session = require("express-session");
+var jwt = require('jsonwebtoken');
+const { decode } = require("punycode");
+
 const users = [
   {
     username: "warner",
@@ -29,14 +32,24 @@ app.use(
 );
 
 function checkLogin(req, res, next) {
-  if (req.session.username && req.session.password) {
-    next();
-  } else {
+   var token = req.cookies.token;
+   if(token){
+    jwt.verify(token,'vasu',(err,decoded) => {
+        if(err){
+            res.sendFile(__dirname + "/login.html"); 
+        }else{
+            req.username = decoded.username;
+            req.token = token 
+            next()
+        }
+    })
+   }else{
     res.sendFile(__dirname + "/login.html");
-  }
+   }
+    
 }
 app.get("/", (req, res) => {
-  if (req.session.username) {
+  if (req.cookies.token) {
     res.sendFile(__dirname + "/home.html");
   } else {
     res.sendFile(__dirname + "/login.html");
@@ -48,17 +61,17 @@ app.get("/aboutus", (req, res) => {
 });
 
 app.get("/careers", checkLogin, (req, res) => {
-  console.log("careers", req.session);
+  console.log("careers", req.cookies.token);
   res.sendFile(__dirname + "/careers.html");
 });
 
 app.get("/products", checkLogin, (req, res) => {
-  console.log("products", req.session);
+  console.log("products", req.cookies.token);
   res.sendFile(__dirname + "/products.html");
 });
 
 app.get("/pokimons", checkLogin, (req, res) => {
-  console.log("pokimons", req.session);
+  console.log("pokimons", req.cookies.token);
   res.sendFile(__dirname + "/pokimon.html");
 });
 app.get("/blue-car.jpg", (req, res) => {
@@ -80,9 +93,10 @@ app.get("/login", (req, res) => {
     }
   });
   if (x) {
-    req.session.username = req.query.username;
-    req.session.password = req.query.password;
-    res.sendFile(__dirname + "/home.html");
+    var token = jwt.sign({ username:req.query.username,password:req.query.password }, 'vasu',{expiresIn:'1h'});
+    res.cookie('token',token,{httpOnly:true})
+
+        res.sendFile(__dirname + "/home.html");
   } else {
     res.sendFile(__dirname + "/error.html");
   }
@@ -90,9 +104,9 @@ app.get("/login", (req, res) => {
 
 app.get("/logout", (req, res) => {
   //   res.clearCookie("username");
-  //   res.clearCookie("password");
-  req.session.destroy();
-  console.log("logout", req.session);
+    res.clearCookie("token");
+//   req.session.destroy();
+  console.log("logout", req.cookies.token);
   res.sendFile(__dirname + "/login.html");
 });
 app.get("/add", (req, res) => {
