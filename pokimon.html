@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      #dd {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #dd li {
+        width: 250px;
+        padding: 10px;
+        border: 1px solid grey;
+        border-radius: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      a {
+        text-decoration: none;
+        color: black;
+        font-size: 17px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3 id="tot"></h3>
+    <ul id="dd"></ul>
+    <script>
+      let Products = [];
+      const API = async () => {
+        let res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=195");
+        let data = await res.json();
+        Products = data.results;
+        genUI(Products);
+      };
+
+      const genUI = (data) => {
+        let dd = document.getElementById("dd");
+        dd.innerHTML = "";
+        data.forEach((p, i) => {
+          let newLi = document.createElement("li");
+          newLi.innerHTML = `<a href="/singlepokimon?name=${p.name}"> ${p.name} </a>`;
+
+          dd.appendChild(newLi);
+        });
+        document.getElementById(
+          "tot"
+        ).innerHTML = `there are of total ${data.length} Products`;
+      };
+      API();
+
+      function deleteButton(i) {
+        Products.splice(i, 1);
+        genUI(Products);
+      }
+    </script>
+  </body>
+</html>

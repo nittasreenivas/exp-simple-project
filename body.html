@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form  onsubmit="handleData(event)" autocomplete="off">
+        <input type="text" name="num1" id="d1"/> <br/>
+        <input type="text" name="num2" id="d2"/> <br/>
+        <button>ADD</button>
+    </form>
+    <h2 id="res"></h2>
+    <script>
+             function handleData(e){
+                 e.preventDefault()
+                 var formData = {
+                    num1:document.getElementById('d1').value,
+                    num2:document.getElementById('d2').value,
+                 }
+                 fetch('http://localhost:3500/add',{
+                    method:"POST",
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify(formData)
+                 })
+                 .then((res) => {
+                    return res.json()
+                 })
+                 .then((data) => {
+                    document.getElementById('res').innerHTML = data.add
+                 })
+             }
+    </script>
+</body>
+</html>

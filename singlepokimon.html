@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #pokimon-details {
+        border: 3px solid red;
+        padding: 10px;
+        border-radius: 10px;
+        width: 350px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #parent {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="parent">
+      <div id="pokimon-details"></div>
+    </div>
+
+    <script>
+      const getNameFromUrl = () => {
+        let urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("name");
+      };
+
+      const API = async (name) => {
+        let res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        if (!res.ok) {
+          document.getElementById("pokimon-details").innerHTML =
+            "single pokimon failed";
+          return;
+        }
+        let data = await res.json();
+        displayData(data);
+      };
+
+      const displayData = (data) => {
+        let newDiv = document.getElementById("pokimon-details");
+        newDiv.innerHTML = `
+             <h2>${data.name}</h2>
+             <img src="${data.sprites.other.dream_world.front_default}" width="150px"/>
+             <h4>${data.weight} kg</h4>
+        `;
+
+        // Re-append the back button so it stays visible
+        let backButton = document.createElement("button");
+        backButton.id = "back";
+        backButton.innerHTML = "Back";
+        newDiv.appendChild(backButton);
+
+        document.getElementById("back").addEventListener("click", () => {
+          window.location.href = "/pokimons";
+        });
+      };
+
+      const getName = getNameFromUrl();
+
+      if (getName) {
+        API(getName);
+      } else {
+        document.getElementById("pokimon-details").innerHTML =
+          "single pokimon failed";
+      }
+    </script>
+  </body>
+</html>
